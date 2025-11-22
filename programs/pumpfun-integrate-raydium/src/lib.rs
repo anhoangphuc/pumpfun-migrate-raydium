@@ -1,5 +1,9 @@
 use anchor_lang::prelude::*;
 
+pub mod instructions;
+
+pub use instructions::*;
+
 declare_id!("EcFiVjMzzhp1N1KCS9mrBAWVe2zf9JvFNHMje3VHTYd4");
 
 #[program]
@@ -8,6 +12,11 @@ pub mod pumpfun_integrate_raydium {
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         msg!("Greetings from: {:?}", ctx.program_id);
+        Ok(())
+    }
+
+    pub fn create_token(ctx: Context<CreateToken>) -> Result<()> {
+        instructions::create_token::handler(ctx)?;
         Ok(())
     }
 }
