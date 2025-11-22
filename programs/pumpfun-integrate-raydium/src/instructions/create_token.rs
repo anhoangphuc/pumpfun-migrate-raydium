@@ -11,7 +11,7 @@ pub struct CreateToken<'info> {
     #[account(
         init,
         payer = signer,
-        mint::decimals = 9,
+        mint::decimals = 6,
         mint::authority = vault,
     )]
     pub mint: Box<Account<'info, Mint>>,
