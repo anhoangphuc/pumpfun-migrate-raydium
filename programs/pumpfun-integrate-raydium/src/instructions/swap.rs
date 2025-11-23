@@ -27,7 +27,7 @@ pub struct Swap<'info> {
         seeds = [Vault::SEED_PREFIX.as_bytes(), mint.key().as_ref()],
         bump,
     )]
-    pub vault: SystemAccount<'info>,
+    pub vault: Account<'info, Vault>,
 
     #[account(
         init_if_needed,

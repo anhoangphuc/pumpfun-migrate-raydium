@@ -1,6 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
-use anchor_lang::system_program::{transfer, Transfer};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{self, Mint, Token, TokenAccount},
@@ -20,14 +18,13 @@ pub struct CreateToken<'info> {
     pub mint: Box<Account<'info, Mint>>,
 
     #[account(
-        // init,
-        // payer = signer,
-        // space = 8 + Vault::INIT_SPACE,
-        mut,
+        init,
+        payer = signer,
+        space = 8 + Vault::INIT_SPACE,
         seeds = [Vault::SEED_PREFIX.as_bytes(), mint.key().as_ref()],
         bump,
     )]
-    pub vault: SystemAccount<'info>,
+    pub vault: Account<'info, Vault>,
 
     #[account(
         init,
@@ -51,17 +48,6 @@ impl Vault {
 }
 
 pub fn handler(ctx: Context<CreateToken>) -> Result<()> {
-    transfer(
-        CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.signer.to_account_info(),
-                to: ctx.accounts.vault.to_account_info(),
-            },
-        ),
-        1 * LAMPORTS_PER_SOL,
-    )?;
-
     let mint_key = ctx.accounts.mint.key();
     let vault_seeds: &[&[&[u8]]] = &[&[
         Vault::SEED_PREFIX.as_bytes(),

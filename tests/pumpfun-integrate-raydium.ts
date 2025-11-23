@@ -57,43 +57,4 @@ describe("pumpfun-integrate-raydium", () => {
     assert.equal(vaultTokenBalance.value.amount, '20000000000', 'Vault token balance should be 20000000000');
   })
 
-  it('Migrate a token', async () => {
-    const NATIVE_MINT = new PublicKey('So11111111111111111111111111111111111111112');
-    const [token0, token1] =
-      (mint.publicKey.toBuffer().compare(NATIVE_MINT.toBuffer()) < 0) ?
-        [mint.publicKey, NATIVE_MINT] :
-        [NATIVE_MINT, mint.publicKey];
-    const tx = await program.methods.migrateToken()
-      .accounts({
-        mint: mint.publicKey,
-        signer: signer.publicKey,
-        token0Mint: token0,
-        token1Mint: token1,
-        ammConfig: new PublicKey('D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2'),
-        createPoolFee: new PublicKey('DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8'),
-        token0Program: TOKEN_PROGRAM_ID,
-        token1Program: TOKEN_PROGRAM_ID,
-      })
-      .preInstructions([
-        ComputeBudgetProgram.setComputeUnitLimit({ units: 1000000 })
-      ])
-      .signers([signer])
-      .rpc({ commitment: 'confirmed' });
-    
-    console.log("Migrate a token success", tx);
-
-    const [vaultAddress] = PublicKey.findProgramAddressSync(
-      [Buffer.from('vault'), mint.publicKey.toBuffer()],
-       program.programId
-    );
-
-    const vaultBalance = await connection.getBalance(vaultAddress, 'confirmed');
-    console.log("Vault balance", vaultBalance);
-
-    const wsolVaultTokenAddress = getAssociatedTokenAddressSync(NATIVE_MINT, vaultAddress, true);
-    let wsolVaultTokenBalance = await connection.getTokenAccountBalance(wsolVaultTokenAddress, 'confirmed');
-    console.log("WSOL vault token balance", wsolVaultTokenBalance);
-    console.log("SOL in WSOL vault", await connection.getBalance(wsolVaultTokenAddress, 'confirmed'));
-  })
-
 });
