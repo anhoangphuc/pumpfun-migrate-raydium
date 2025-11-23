@@ -1,7 +1,10 @@
+use anchor_lang::prelude::*;
 use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
-use anchor_lang::{prelude::*, system_program::Transfer};
-use anchor_lang::system_program::transfer;
-use anchor_spl::{associated_token::AssociatedToken, token::{self, Mint, Token, TokenAccount}};
+use anchor_lang::system_program::{transfer, Transfer};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{self, Mint, Token, TokenAccount},
+};
 
 #[derive(Accounts)]
 pub struct CreateToken<'info> {
@@ -17,13 +20,14 @@ pub struct CreateToken<'info> {
     pub mint: Box<Account<'info, Mint>>,
 
     #[account(
-        init,
-        payer = signer,
-        space = 8 + Vault::INIT_SPACE,
+        // init,
+        // payer = signer,
+        // space = 8 + Vault::INIT_SPACE,
+        mut,
         seeds = [Vault::SEED_PREFIX.as_bytes(), mint.key().as_ref()],
         bump,
     )]
-    pub vault: Account<'info, Vault>,
+    pub vault: SystemAccount<'info>,
 
     #[account(
         init,
@@ -47,6 +51,17 @@ impl Vault {
 }
 
 pub fn handler(ctx: Context<CreateToken>) -> Result<()> {
+    transfer(
+        CpiContext::new(
+            ctx.accounts.system_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.signer.to_account_info(),
+                to: ctx.accounts.vault.to_account_info(),
+            },
+        ),
+        1 * LAMPORTS_PER_SOL,
+    )?;
+
     let mint_key = ctx.accounts.mint.key();
     let vault_seeds: &[&[&[u8]]] = &[&[
         Vault::SEED_PREFIX.as_bytes(),
@@ -61,17 +76,11 @@ pub fn handler(ctx: Context<CreateToken>) -> Result<()> {
                 mint: ctx.accounts.mint.to_account_info(),
                 to: ctx.accounts.vault_token_account.to_account_info(),
                 authority: ctx.accounts.vault.to_account_info(),
-            }, vault_seeds),
-            1000_000_000,
+            },
+            vault_seeds,
+        ),
+        1000_000_000,
     )?;
 
-    transfer(CpiContext::new(
-        ctx.accounts.system_program.to_account_info(),
-        Transfer {
-            from: ctx.accounts.signer.to_account_info(),
-            to: ctx.accounts.vault.to_account_info(),
-        }
-    ), 20 * LAMPORTS_PER_SOL)?;
-
-    Ok(())    
+    Ok(())
 }
