@@ -26,13 +26,11 @@ pub struct CreateToken<'info> {
     pub wsol_mint: Box<Account<'info, Mint>>,
 
     #[account(
-        init,
-        payer = signer,
-        space = 8 + Vault::INIT_SPACE,
+        mut,
         seeds = [Vault::SEED_PREFIX.as_bytes(), mint.key().as_ref()],
         bump,
     )]
-    pub vault: Account<'info, Vault>,
+    pub vault: SystemAccount<'info>,
 
     #[account(
         init,
