@@ -233,11 +233,11 @@ pub fn handler(ctx: Context<MigrateToken>) -> Result<()> {
     let amount_0: u64;
     let amount_1: u64;
     if ctx.accounts.token_0_mint.key() == NATIVE_MINT {
-        amount_0 = 19 * LAMPORTS_PER_SOL;
+        amount_0 = 9 * LAMPORTS_PER_SOL;
         amount_1 = 1_000_000_000;
     } else {
         amount_0 = 1_000_000_000;
-        amount_1 = 19 * LAMPORTS_PER_SOL;
+        amount_1 = 9 * LAMPORTS_PER_SOL;
     }
 
     cpi::initialize(

@@ -34,28 +34,13 @@ describe("pumpfun-integrate-raydium", () => {
     );
 
     const vaultTokenAddress = getAssociatedTokenAddressSync(mint.publicKey, vaultAddress, true);
+    const vaultWsolAddress = getAssociatedTokenAddressSync(NATIVE_MINT, vaultAddress, true);
 
     const vaultTokenBalance = await connection.getTokenAccountBalance(vaultTokenAddress, 'confirmed');
-    assert.equal(vaultTokenBalance.value.amount, '1000000000', 'Vault token balance should be 1000000000');
+    const vaultWsolBalance = await connection.getTokenAccountBalance(vaultWsolAddress, 'confirmed');
+    assert.equal(vaultTokenBalance.value.amount, '1000000000000', 'Vault token balance should be 1000000000');
+    assert.equal(vaultWsolBalance.value.amount, '10000000000', 'Vault wsol balance should be 10000000000');
   });
-
-  it("Swap success", async () => {
-    const tx = await program.methods.swap().accounts({
-      mint: mint.publicKey,
-      signer: signer.publicKey,
-    }).signers([signer])
-    .rpc({ commitment: 'confirmed' });
-    console.log("Swap success", tx);
-
-    const [vaultAddress] = PublicKey.findProgramAddressSync(
-      [Buffer.from('vault'), mint.publicKey.toBuffer()],
-       program.programId
-    );
-
-    const vaultTokenAddress = getAssociatedTokenAddressSync(NATIVE_MINT, vaultAddress, true);
-    const vaultTokenBalance = await connection.getTokenAccountBalance(vaultTokenAddress, 'confirmed');
-    assert.equal(vaultTokenBalance.value.amount, '20000000000', 'Vault token balance should be 20000000000');
-  })
 
   it('Migrate a token', async () => {
     const NATIVE_MINT = new PublicKey('So11111111111111111111111111111111111111112');

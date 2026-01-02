@@ -20,11 +20,6 @@ pub mod pumpfun_integrate_raydium {
         Ok(())
     }
 
-    pub fn swap(ctx: Context<Swap>) -> Result<()> {
-        instructions::swap::handler(ctx)?;
-        Ok(())
-    }
-
     pub fn migrate_token(ctx: Context<MigrateToken>) -> Result<()> {
         instructions::migrate_token::handler(ctx)?;
         Ok(())
