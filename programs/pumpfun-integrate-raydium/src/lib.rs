@@ -19,11 +19,6 @@ pub mod pumpfun_integrate_raydium {
         instructions::create_token::handler(ctx)?;
         Ok(())
     }
-
-    pub fn swap(ctx: Context<Swap>) -> Result<()> {
-        instructions::swap::handler(ctx)?;
-        Ok(())
-    }
 }
 
 #[derive(Accounts)]

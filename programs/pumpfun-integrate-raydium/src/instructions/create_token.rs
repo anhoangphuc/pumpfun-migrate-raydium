@@ -1,8 +1,12 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{self, Mint, Token, TokenAccount},
+    token::{self, Mint, SyncNative, Token, TokenAccount, sync_native},
 };
+use anchor_lang::system_program::{transfer, Transfer};
+
+
+pub const NATIVE_MINT: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
 
 #[derive(Accounts)]
 pub struct CreateToken<'info> {
@@ -16,6 +20,9 @@ pub struct CreateToken<'info> {
         mint::authority = vault,
     )]
     pub mint: Box<Account<'info, Mint>>,
+
+    #[account(address = NATIVE_MINT)]
+    pub wsol_mint: Box<Account<'info, Mint>>,
 
     #[account(
         init,
@@ -33,6 +40,14 @@ pub struct CreateToken<'info> {
         associated_token::authority = vault,
     )]
     pub vault_token_account: Account<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
+        payer = signer,
+        associated_token::mint = wsol_mint,
+        associated_token::authority = vault
+    )]
+    pub wsol_vault_token_account: Box<Account<'info, TokenAccount>>,
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -65,8 +80,26 @@ pub fn handler(ctx: Context<CreateToken>) -> Result<()> {
             },
             vault_seeds,
         ),
-        1000_000_000,
+        1000_000_000_000,
     )?;
+
+    transfer(
+        CpiContext::new(
+            ctx.accounts.system_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.signer.to_account_info(),
+                to: ctx.accounts.wsol_vault_token_account.to_account_info(),
+            },
+        ),
+        10 * LAMPORTS_PER_SOL,
+    )?;
+
+    sync_native(CpiContext::new(
+        ctx.accounts.token_program.to_account_info(),
+        SyncNative {
+            account: ctx.accounts.wsol_vault_token_account.to_account_info(),
+        },
+    ))?;
 
     Ok(())
 }
